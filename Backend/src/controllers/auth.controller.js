@@ -3,11 +3,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const tokenBlacklistModel = require("../models/blacklist.model");
 
-/**
- * @name registerUserController
- * @description register a new user, expects username, email and password in the request body
- * @access Public
- */
 async function registerUserController(req, res) {
   const { username, email, password } = req.body;
 
@@ -41,7 +36,11 @@ async function registerUserController(req, res) {
     { expiresIn: "1d" },
   );
 
-  res.cookie("token", token);
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: true, // 👈 added
+    sameSite: "none", // 👈 added
+  });
 
   res.status(201).json({
     message: "User registered successfully",
@@ -53,11 +52,6 @@ async function registerUserController(req, res) {
   });
 }
 
-/**
- * @name loginUserController
- * @description login a user, expects email and password in the request body
- * @access Public
- */
 async function loginUserController(req, res) {
   const { email, password } = req.body;
 
@@ -83,7 +77,12 @@ async function loginUserController(req, res) {
     { expiresIn: "1d" },
   );
 
-  res.cookie("token", token);
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: true, // 👈 added
+    sameSite: "none", // 👈 added
+  });
+
   res.status(200).json({
     message: "User loggedIn successfully.",
     user: {
@@ -94,11 +93,6 @@ async function loginUserController(req, res) {
   });
 }
 
-/**
- * @name logoutUserController
- * @description clear token from user cookie and add the token in blacklist
- * @access public
- */
 async function logoutUserController(req, res) {
   const token = req.cookies.token;
 
@@ -113,11 +107,6 @@ async function logoutUserController(req, res) {
   });
 }
 
-/**
- * @name getMeController
- * @description get the current logged in user details.
- * @access private
- */
 async function getMeController(req, res) {
   const user = await userModel.findById(req.user.id);
 
