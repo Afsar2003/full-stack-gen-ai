@@ -36,14 +36,9 @@ async function registerUserController(req, res) {
     { expiresIn: "1d" },
   );
 
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: true, // 👈 added
-    sameSite: "none", // 👈 added
-  });
-
   res.status(201).json({
     message: "User registered successfully",
+    token, // 👈 send token in response
     user: {
       id: user._id,
       username: user.username,
@@ -77,14 +72,9 @@ async function loginUserController(req, res) {
     { expiresIn: "1d" },
   );
 
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: true, // 👈 added
-    sameSite: "none", // 👈 added
-  });
-
   res.status(200).json({
     message: "User loggedIn successfully.",
+    token, // 👈 send token in response
     user: {
       id: user._id,
       username: user.username,
@@ -94,13 +84,11 @@ async function loginUserController(req, res) {
 }
 
 async function logoutUserController(req, res) {
-  const token = req.cookies.token;
+  const token = req.headers.authorization?.split(" ")[1]; // 👈 get from header
 
   if (token) {
     await tokenBlacklistModel.create({ token });
   }
-
-  res.clearCookie("token");
 
   res.status(200).json({
     message: "User logged out successfully",

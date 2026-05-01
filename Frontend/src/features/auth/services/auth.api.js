@@ -1,8 +1,16 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000", // 👈 fixed
-  withCredentials: true,
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
+});
+
+// 👈 attach token to every request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 export async function register({ username, email, password }) {
@@ -12,7 +20,6 @@ export async function register({ username, email, password }) {
       email,
       password,
     });
-
     return response.data;
   } catch (err) {
     console.log(err);
@@ -25,7 +32,6 @@ export async function login({ email, password }) {
       email,
       password,
     });
-
     return response.data;
   } catch (err) {
     console.log(err);
@@ -35,7 +41,6 @@ export async function login({ email, password }) {
 export async function logout() {
   try {
     const response = await api.get("/api/auth/logout");
-
     return response.data;
   } catch (error) {
     console.error("Logout error:", error);
@@ -45,7 +50,6 @@ export async function logout() {
 export async function getMe() {
   try {
     const response = await api.get("/api/auth/get-me");
-
     return response.data;
   } catch (err) {
     console.log(err);
